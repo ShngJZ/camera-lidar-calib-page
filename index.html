@@ -47,23 +47,13 @@
       <div class="container narrow">
         <h2>Abstract</h2>
         <p class="abstract-text">
-          We calibrate a camera to a LiDAR by working entirely in a 2D projective LiDAR render.
-          Our core observation is that when the LiDAR point cloud is rendered with a virtual pinhole
-          camera placed exactly at the center of the LiDAR&mdash;its optical &ldquo;eye,&rdquo; which itself
-          requires calibrating&mdash;the resulting 2D projective map is <em>occlusion-free</em>: every LiDAR
-          return maps to a unique pixel with no self-occlusion or depth ordering ambiguity. This motivates
-          us to define <em>all</em> calibration objectives in this occlusion-free 2D projective LiDAR render
-          from the virtual LiDAR-eye camera, rather than in the LiDAR's native angular coordinates where a
-          wide field-of-view sensor wraps at the panorama seam and bends straight target edges into curves.
-          Formulating the plane-attract / silhouette-repel objective in the LiDAR-eye render makes it exact
-          and wrap-safe, which yields an objective landscape that is far easier to drive to global optimality
-          than prior feature-correspondence formulations. Crucially, this same formulation uniquely admits a
-          <em>multi-frame</em> objective: because every frame is expressed in one consistent, occlusion-free
-          LiDAR-eye view, we jointly optimize a single extrinsic across all frames without any per-frame
-          heuristic feature estimation&mdash;a multi-frame objective that prior target-based methods could not
-          reach. On a wide-FoV Ouster OS-1-128 plus rolling-shutter camera rig, our fast closed-form
-          initializer and differentiable optimizer converge to the same extrinsic, and dense overlays of the
-          calibrated cloud align well across the full panorama.
+          We calibrate a camera to a LiDAR by working entirely in a 2D projective LiDAR render. Our key
+          observation is that rendering the LiDAR point cloud from a virtual pinhole camera at the LiDAR's
+          own optical center&mdash;its &ldquo;eye&rdquo;&mdash;yields an <em>occlusion-free</em> image. We
+          therefore define the calibration objective in this LiDAR-eye render, which makes it well-behaved
+          for global optimization and, uniquely, enables a joint multi-frame objective without per-frame
+          heuristics. We demonstrate accurate, self-consistent calibration and dense overlays across a
+          wide field of view.
         </p>
       </div>
     </section>
@@ -73,7 +63,7 @@
       <div class="container">
         <h2>Method</h2>
         <p class="section-lead">
-          Three stages, all expressed in the eye of the LiDAR.
+          Three stages, all in the eye of the LiDAR.
         </p>
 
         <!-- Component 1 -->
@@ -82,18 +72,15 @@
             <span class="step-num">1</span>
             <h3>Calibrate the LiDAR to its own eye</h3>
             <p>
-              The reported sensor origin is not the true ray origin. We recover the LiDAR optical-center
-              offset <code>&delta;<sub>c</sub></code> by minimizing the variance of nearest-neighbor
-              azimuthal gaps&mdash;i.e., finding the center that makes the angular spacing most uniform. The
-              animation sweeps <code>&delta;<sub>c</sub></code> and shows the range panorama sharpening into
-              a consistent angular grid.
+              We first recover the LiDAR's optical center&mdash;its &ldquo;eye&rdquo;&mdash;so the cloud can
+              be rendered from that exact viewpoint.
             </p>
           </div>
           <figure class="step-media">
             <video controls playsinline muted loop autoplay preload="metadata">
               <source src="assets/eye_recovery.mp4" type="video/mp4" />
             </video>
-            <figcaption>LiDAR optical-center recovery via angular-uniformity minimization.</figcaption>
+            <figcaption>Recovering the LiDAR optical center.</figcaption>
           </figure>
         </div>
 
@@ -101,22 +88,17 @@
         <div class="step step-reverse">
           <div class="step-text">
             <span class="step-num">2</span>
-            <h3>Visualize the calibration objective</h3>
+            <h3>Optimize in the LiDAR-eye render</h3>
             <p>
-              We place a yaw-aligned virtual pinhole camera at the recovered eye and optimize a
-              two-threshold binary objective: <strong>attract</strong> on-plane, in-silhouette returns
-              toward the board plane, and <strong>repel</strong> the projected board edge (yellow polygon)
-              past clearly off-plane returns, while abstaining on ambiguous near-plane points. The animation
-              shows the board silhouette converging over optimization steps as the alignment score improves.
-              Because projection is linear, the silhouette stays a straight-edged polygon and the objective
-              is exact and wrap-safe.
+              The calibration objective is defined in the occlusion-free LiDAR-eye render and optimized
+              jointly across frames. The animation shows the alignment converging.
             </p>
           </div>
           <figure class="step-media">
             <video controls playsinline muted loop autoplay preload="metadata">
               <source src="assets/process_objective.mp4" type="video/mp4" />
             </video>
-            <figcaption>The board silhouette (yellow polygon) refining over optimization steps in the LiDAR-eye view.</figcaption>
+            <figcaption>Alignment converging in the LiDAR-eye view.</figcaption>
           </figure>
         </div>
 
@@ -124,12 +106,10 @@
         <div class="step">
           <div class="step-text">
             <span class="step-num">3</span>
-            <h3>Calibrated result &amp; depth-render quality</h3>
+            <h3>Calibrated result &amp; depth render</h3>
             <p>
-              With the extrinsic recovered, we project the calibrated cloud onto every RGB frame and render
-              the LiDAR range panorama. The dense overlay stays aligned across the full wide field of view,
-              including across the panorama seam. Our fast closed-form initializer and the differentiable
-              optimizer agree to within &sim;2&nbsp;cm in translation.
+              The calibrated cloud projects cleanly onto the RGB video, staying aligned across the full
+              wide field of view.
             </p>
           </div>
           <figure class="step-media">

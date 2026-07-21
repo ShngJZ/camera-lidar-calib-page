@@ -22,7 +22,6 @@
       <nav class="links" aria-label="Resource links">
         <a class="btn" href="#abstract"><span class="btn-ico">&#9782;</span> Abstract</a>
         <a class="btn" href="#method"><span class="btn-ico">&#9636;</span> Method</a>
-        <a class="btn" href="#results"><span class="btn-ico">&#9654;</span> Results</a>
         <a class="btn btn-disabled" aria-disabled="true"><span class="btn-ico">&#128196;</span> Paper (soon)</a>
         <a class="btn btn-disabled" aria-disabled="true"><span class="btn-ico">&#128187;</span> Code (soon)</a>
       </nav>
@@ -142,21 +141,6 @@
     </section>
 
     <!-- Results -->
-    <section id="results" class="section">
-      <div class="container narrow">
-        <h2>Self-Consistency</h2>
-        <p class="section-lead">
-          We report calibration quality as self-consistency on a single wide-FoV session, not against an
-          external ground-truth extrinsic.
-        </p>
-        <ul class="facts">
-          <li><strong>Sensor rig.</strong> Ouster OS-1-128 (1024&times;10, wide FoV) + rolling-shutter camera (1920&times;1080/eye).</li>
-          <li><strong>Recovered eye offset.</strong> <code>&delta;<sub>c</sub> = [0.4, 0.1, &minus;30.7]&nbsp;mm</code>, consistent with the sensor's LiDAR-to-origin z offset.</li>
-          <li><strong>Init vs. refine.</strong> Closed-form IRLS + consensus initializer agrees with the Adam optimizer to &sim;2&nbsp;cm in translation.</li>
-          <li><strong>Board-plane residuals.</strong> Median &sim;6.5&ndash;19.3&nbsp;mm across frames (self-consistency proxy).</li>
-        </ul>
-      </div>
-    </section>
   </main>
 
   <footer class="footer">

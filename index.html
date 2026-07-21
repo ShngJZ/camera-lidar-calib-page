@@ -47,20 +47,22 @@
       <div class="container narrow">
         <h2>Abstract</h2>
         <p class="abstract-text">
-          We present a target-based camera&ndash;LiDAR extrinsic calibration method that performs the
-          geometric alignment <em>in the eye of the LiDAR</em>. Target-based calibration typically
-          establishes sparse feature correspondences (hole centers, corners) and expresses the objective
-          in the LiDAR's angular coordinates, where two problems arise on wide field-of-view sensors: the
-          azimuth wraps at &plusmn;&pi;, tearing a target near the seam into two, and spherical projection
-          bends straight board edges into curves, so a polygon silhouette objective is only approximate.
-          Our key insight is to recover the LiDAR optical center (its &ldquo;eye&rdquo;), place a fixed
-          yaw-aligned virtual pinhole camera at that center, and express a plane-attract /
-          silhouette-repel objective in that virtual camera's pixel space. Because pinhole projection is
-          linear in homogeneous coordinates, straight board edges map to straight image edges&mdash;making
-          the polygon signed-distance objective exact&mdash;and points that straddle the panorama seam land
-          in adjacent pixels, so the formulation is wrap-safe by construction. On a wide-FoV Ouster
-          OS-1-128 plus rolling-shutter camera rig, our fast closed-form initializer and differentiable
-          optimizer converge to the same extrinsic within &sim;2&nbsp;cm, and dense overlays of the
+          We calibrate a camera to a LiDAR by working entirely in a 2D projective LiDAR render.
+          Our core observation is that when the LiDAR point cloud is rendered with a virtual pinhole
+          camera placed exactly at the center of the LiDAR&mdash;its optical &ldquo;eye,&rdquo; which itself
+          requires calibrating&mdash;the resulting 2D projective map is <em>occlusion-free</em>: every LiDAR
+          return maps to a unique pixel with no self-occlusion or depth ordering ambiguity. This motivates
+          us to define <em>all</em> calibration objectives in this occlusion-free 2D projective LiDAR render
+          from the virtual LiDAR-eye camera, rather than in the LiDAR's native angular coordinates where a
+          wide field-of-view sensor wraps at the panorama seam and bends straight target edges into curves.
+          Formulating the plane-attract / silhouette-repel objective in the LiDAR-eye render makes it exact
+          and wrap-safe, which yields an objective landscape that is far easier to drive to global optimality
+          than prior feature-correspondence formulations. Crucially, this same formulation uniquely admits a
+          <em>multi-frame</em> objective: because every frame is expressed in one consistent, occlusion-free
+          LiDAR-eye view, we jointly optimize a single extrinsic across all frames without any per-frame
+          heuristic feature estimation&mdash;a multi-frame objective that prior target-based methods could not
+          reach. On a wide-FoV Ouster OS-1-128 plus rolling-shutter camera rig, our fast closed-form
+          initializer and differentiable optimizer converge to the same extrinsic, and dense overlays of the
           calibrated cloud align well across the full panorama.
         </p>
       </div>

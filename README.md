@@ -21,7 +21,7 @@ python3 -m http.server 8000
 - `assets/` — web-optimized media:
   - `final_overlay.png` — calibrated overlay + range panorama teaser.
   - `eye_recovery.mp4` — LiDAR optical-center recovery animation.
-  - `process_binary_residual.png` — objective in virtual-camera pixel space.
+  - `process_objective.mp4` — board-silhouette objective converging in the LiDAR-eye view.
   - `final_overlays.mp4` — time-synced overlays on the RGB video.
 
 ## Deploy to GitHub Pages

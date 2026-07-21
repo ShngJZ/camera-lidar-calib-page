@@ -103,16 +103,19 @@
             <h3>Visualize the calibration objective</h3>
             <p>
               We place a yaw-aligned virtual pinhole camera at the recovered eye and optimize a
-              two-threshold binary objective in its pixel space: <strong>attract</strong> on-plane,
-              in-silhouette returns (blue) toward the board plane, and <strong>repel</strong> the projected
-              board edge (yellow polygon) past clearly off-plane returns, while abstaining on ambiguous
-              near-plane points. Because projection is linear, the board silhouette stays a straight-edged
-              polygon and the objective is exact and wrap-safe.
+              two-threshold binary objective: <strong>attract</strong> on-plane, in-silhouette returns
+              toward the board plane, and <strong>repel</strong> the projected board edge (yellow polygon)
+              past clearly off-plane returns, while abstaining on ambiguous near-plane points. The animation
+              shows the board silhouette converging over optimization steps as the alignment score improves.
+              Because projection is linear, the silhouette stays a straight-edged polygon and the objective
+              is exact and wrap-safe.
             </p>
           </div>
           <figure class="step-media">
-            <img src="assets/process_binary_residual.png" alt="Binary residual in virtual-camera pixel space: plane-attract inliers in blue, board silhouette polygon in yellow." />
-            <figcaption>Plane-attract / silhouette-repel objective in the virtual LiDAR-eye camera.</figcaption>
+            <video controls playsinline muted loop autoplay preload="metadata">
+              <source src="assets/process_objective.mp4" type="video/mp4" />
+            </video>
+            <figcaption>The board silhouette (yellow polygon) refining over optimization steps in the LiDAR-eye view.</figcaption>
           </figure>
         </div>
 

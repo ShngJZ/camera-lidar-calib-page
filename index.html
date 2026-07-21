@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Camera LiDAR Calibration in the Eye of LiDAR</title>
+  <meta name="description" content="A target-based camera-LiDAR extrinsic calibration method that performs the geometric alignment in the eye of the LiDAR: a virtual pinhole camera placed at the recovered LiDAR optical center makes the silhouette objective exact and panorama-wrap-safe." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="hero">
+    <div class="container">
+      <p class="venue">Preprint &middot; Under Review</p>
+      <h1 class="title">Camera LiDAR Calibration<br /><span class="subtitle">in the Eye of LiDAR</span></h1>
+
+      <div class="authors"><span class="author">Anonymous Authors</span></div>
+      <div class="affiliations"><span>Anonymous Affiliation</span></div>
+
+      <nav class="links" aria-label="Resource links">
+        <a class="btn" href="#abstract"><span class="btn-ico">&#9782;</span> Abstract</a>
+        <a class="btn" href="#method"><span class="btn-ico">&#9636;</span> Method</a>
+        <a class="btn" href="#results"><span class="btn-ico">&#9654;</span> Results</a>
+        <a class="btn btn-disabled" aria-disabled="true"><span class="btn-ico">&#128196;</span> Paper (soon)</a>
+        <a class="btn btn-disabled" aria-disabled="true"><span class="btn-ico">&#128187;</span> Code (soon)</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <!-- Teaser -->
+    <section class="section section-teaser">
+      <div class="container">
+        <figure class="teaser-card">
+          <img src="assets/final_overlay.png" alt="Calibrated LiDAR cloud projected onto the RGB image (left) and the LiDAR range panorama (right)." />
+          <figcaption>
+            The calibrated LiDAR point cloud projected onto the RGB frame (left) and rendered as a
+            range panorama (right), using the extrinsic recovered by our method.
+          </figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <!-- Abstract -->
+    <section id="abstract" class="section">
+      <div class="container narrow">
+        <h2>Abstract</h2>
+        <p class="abstract-text">
+          We present a target-based camera&ndash;LiDAR extrinsic calibration method that performs the
+          geometric alignment <em>in the eye of the LiDAR</em>. Target-based calibration typically
+          establishes sparse feature correspondences (hole centers, corners) and expresses the objective
+          in the LiDAR's angular coordinates, where two problems arise on wide field-of-view sensors: the
+          azimuth wraps at &plusmn;&pi;, tearing a target near the seam into two, and spherical projection
+          bends straight board edges into curves, so a polygon silhouette objective is only approximate.
+          Our key insight is to recover the LiDAR optical center (its &ldquo;eye&rdquo;), place a fixed
+          yaw-aligned virtual pinhole camera at that center, and express a plane-attract /
+          silhouette-repel objective in that virtual camera's pixel space. Because pinhole projection is
+          linear in homogeneous coordinates, straight board edges map to straight image edges&mdash;making
+          the polygon signed-distance objective exact&mdash;and points that straddle the panorama seam land
+          in adjacent pixels, so the formulation is wrap-safe by construction. On a wide-FoV Ouster
+          OS-1-128 plus rolling-shutter camera rig, our fast closed-form initializer and differentiable
+          optimizer converge to the same extrinsic within &sim;2&nbsp;cm, and dense overlays of the
+          calibrated cloud align well across the full panorama.
+        </p>
+      </div>
+    </section>
+
+    <!-- Method / algorithm components -->
+    <section id="method" class="section section-alt">
+      <div class="container">
+        <h2>Method</h2>
+        <p class="section-lead">
+          Three stages, all expressed in the eye of the LiDAR.
+        </p>
+
+        <!-- Component 1 -->
+        <div class="step">
+          <div class="step-text">
+            <span class="step-num">1</span>
+            <h3>Calibrate the LiDAR to its own eye</h3>
+            <p>
+              The reported sensor origin is not the true ray origin. We recover the LiDAR optical-center
+              offset <code>&delta;<sub>c</sub></code> by minimizing the variance of nearest-neighbor
+              azimuthal gaps&mdash;i.e., finding the center that makes the angular spacing most uniform. The
+              animation sweeps <code>&delta;<sub>c</sub></code> and shows the range panorama sharpening into
+              a consistent angular grid.
+            </p>
+          </div>
+          <figure class="step-media">
+            <video controls playsinline muted loop autoplay preload="metadata">
+              <source src="assets/eye_recovery.mp4" type="video/mp4" />
+            </video>
+            <figcaption>LiDAR optical-center recovery via angular-uniformity minimization.</figcaption>
+          </figure>
+        </div>
+
+        <!-- Component 2 -->
+        <div class="step step-reverse">
+          <div class="step-text">
+            <span class="step-num">2</span>
+            <h3>Visualize the calibration objective</h3>
+            <p>
+              We place a yaw-aligned virtual pinhole camera at the recovered eye and optimize a
+              two-threshold binary objective in its pixel space: <strong>attract</strong> on-plane,
+              in-silhouette returns (blue) toward the board plane, and <strong>repel</strong> the projected
+              board edge (yellow polygon) past clearly off-plane returns, while abstaining on ambiguous
+              near-plane points. Because projection is linear, the board silhouette stays a straight-edged
+              polygon and the objective is exact and wrap-safe.
+            </p>
+          </div>
+          <figure class="step-media">
+            <img src="assets/process_binary_residual.png" alt="Binary residual in virtual-camera pixel space: plane-attract inliers in blue, board silhouette polygon in yellow." />
+            <figcaption>Plane-attract / silhouette-repel objective in the virtual LiDAR-eye camera.</figcaption>
+          </figure>
+        </div>
+
+        <!-- Component 3 -->
+        <div class="step">
+          <div class="step-text">
+            <span class="step-num">3</span>
+            <h3>Calibrated result &amp; depth-render quality</h3>
+            <p>
+              With the extrinsic recovered, we project the calibrated cloud onto every RGB frame and render
+              the LiDAR range panorama. The dense overlay stays aligned across the full wide field of view,
+              including across the panorama seam. Our fast closed-form initializer and the differentiable
+              optimizer agree to within &sim;2&nbsp;cm in translation.
+            </p>
+          </div>
+          <figure class="step-media">
+            <video controls playsinline muted loop preload="metadata">
+              <source src="assets/final_overlays.mp4" type="video/mp4" />
+            </video>
+            <figcaption>Time-synced overlays of the calibrated cloud on the RGB video.</figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- Results -->
+    <section id="results" class="section">
+      <div class="container narrow">
+        <h2>Self-Consistency</h2>
+        <p class="section-lead">
+          We report calibration quality as self-consistency on a single wide-FoV session, not against an
+          external ground-truth extrinsic.
+        </p>
+        <ul class="facts">
+          <li><strong>Sensor rig.</strong> Ouster OS-1-128 (1024&times;10, wide FoV) + rolling-shutter camera (1920&times;1080/eye).</li>
+          <li><strong>Recovered eye offset.</strong> <code>&delta;<sub>c</sub> = [0.4, 0.1, &minus;30.7]&nbsp;mm</code>, consistent with the sensor's LiDAR-to-origin z offset.</li>
+          <li><strong>Init vs. refine.</strong> Closed-form IRLS + consensus initializer agrees with the Adam optimizer to &sim;2&nbsp;cm in translation.</li>
+          <li><strong>Board-plane residuals.</strong> Median &sim;6.5&ndash;19.3&nbsp;mm across frames (self-consistency proxy).</li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <p>Project page for &ldquo;Camera LiDAR Calibration in the Eye of LiDAR.&rdquo; Anonymous submission.</p>
+    </div>
+  </footer>
+</body>
+</html>
